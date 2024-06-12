@@ -1,11 +1,6 @@
 require('dotenv')
 const mongoose = require('mongoose')
 const productModel = require('../Model/product')
-const multer = require('multer')
-const fs = require('fs')
-const path = require('path')
-
-
 
 async function getProduct(req,res){
     const id = req.params.id
@@ -33,22 +28,33 @@ async function getProducts(req,res){
         res.status(500).json({error: "Internal sever error"}) 
    }
 }
+function uploadImage (req,res){
+    const productName = req.body.name;
+    if (req.files) {
+        console.log('Gotcha!')
+        console.log(productName)
+        console.log(req.files)
+        res.send('noice!')
+    } else {
+      res.send('No images were uploaded.');
+      console.log(productName)
+    }
+}
 async function createProduct (req, res) {
-    const name = req.body.name
-    const image = req.body.image
-    const price = req.body.price
-    const brand = req.body.brand
-    const classification = req.body.classification
-    const color = req.body.color
-    const engine= req.body.engine
-    const driveSystem = req.body.driveSystem
-    const horsePowrer = req.body.horsePowrer
-    const fuelConsumption= req.body.fuelConsumption
-    const viewmode = req.body.viewmode
     try {
-        fs.mkdir(path.join('../Media/product_img', '${name}'))
-        const uploadProductimg = multer({dest:"../Media/product_img"})
-        new productModel({
+        const name = req.body.name
+        const image = req.files.images
+        const price = req.body.price
+        const brand = req.body.brand
+        const classification = req.body.classification
+        const color = req.body.color
+        const engine= req.body.engine
+        const driveSystem = req.body.driveSystem
+        const horsePowrer = req.body.horsePowrer
+        const fuelConsumption= req.body.fuelConsumption
+        const viewmode = req.body.viewmode
+    
+        await new productModel({
             
                 name: name,
                 price:price,
@@ -98,4 +104,4 @@ async function deleteProduct(req,res){
     }
 }
 
-module.exports = { createProduct,updateProduct,deleteProduct,getProduct,getProducts}
+module.exports = { createProduct,updateProduct,deleteProduct,getProduct,getProducts, uploadImage}

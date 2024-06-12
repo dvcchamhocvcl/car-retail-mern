@@ -1,21 +1,25 @@
 const express = require('express');
-const router = express.Router();
 const {  
-    deleteUserComments,adminLoginHandler,viewComment,
-    makeAdmin,removeAdmin, getUser,getUsers
+  deleteUserComments,adminLoginHandler,viewComment,
+  makeAdmin,removeAdmin, getUser,getUsers
   } = require('../Controllers/AdminController');
 const { 
-    createProduct,updateProduct,deleteProduct,getProduct,getProducts
-} = require('../Controllers/ProductController')
+  createProduct,updateProduct,deleteProduct,getProduct,getProducts, uploadImage
+  } = require('../Controllers/ProductController');
+const { uploadImg } = require('../Middlewares/multer');
+const router = express.Router();
 
-//credentials
 router.get('/',adminLoginHandler)
 //product malnipulate
 router.get('/products', getProducts)
 router.get('/products/:id', getProduct)
 router.get('/products/:id/comment', viewComment)
 router.delete('/products/:id/:comment-id', deleteUserComments)
-router.post('/products', createProduct)
+router.post('/products',createProduct)
+
+
+router.post('/test-upload-image',uploadImg.array('image', 10) , uploadImage)
+
 router.delete('products/:id',deleteProduct)
 router.put('/products/:id',updateProduct)
 
