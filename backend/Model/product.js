@@ -44,7 +44,7 @@ const productSchema = new mongoose.Schema({
             type: Number
         }
     },
-    viewmode:{
+    public:{
         type: Boolean,
         require: true
     },

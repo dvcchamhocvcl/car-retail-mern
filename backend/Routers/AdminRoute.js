@@ -15,7 +15,8 @@ router.get('/products', getProducts)
 router.get('/products/:id', getProduct)
 router.get('/products/:id/comment', viewComment)
 router.delete('/products/:id/:comment-id', deleteUserComments)
-router.post('/products',createProduct)
+
+router.post('/product',uploadImg.array('image', 10),createProduct)
 
 
 router.post('/test-upload-image',uploadImg.array('image', 10) , uploadImage)

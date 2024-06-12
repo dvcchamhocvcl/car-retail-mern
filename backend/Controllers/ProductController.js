@@ -43,7 +43,7 @@ function uploadImage (req,res){
 async function createProduct (req, res) {
     try {
         const name = req.body.name
-        const image = req.files.images
+        // const image = req.files
         const price = req.body.price
         const brand = req.body.brand
         const classification = req.body.classification
@@ -52,7 +52,7 @@ async function createProduct (req, res) {
         const driveSystem = req.body.driveSystem
         const horsePowrer = req.body.horsePowrer
         const fuelConsumption= req.body.fuelConsumption
-        const viewmode = req.body.viewmode
+        const public = req.body.public
     
         await new productModel({
             
@@ -69,11 +69,12 @@ async function createProduct (req, res) {
                     horsePowrer:horsePowrer,
                     fuelConsumption:fuelConsumption
                 },
-                viewmode:viewmode
+                public:public
             
         }).save()
     } catch (error) {
         console.log(error)
+        res.status(502).json({error:'Internal Server Error'})
     }
 }
 async function updateProduct(req,res){
