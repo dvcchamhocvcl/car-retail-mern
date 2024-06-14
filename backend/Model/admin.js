@@ -10,15 +10,7 @@ const adminSchema = new Schema({
     passwordHash:{
         type: String,
         require: true
-    },
-    profileImage: {
-        type: String
-        
-    },
-    authorOf:[{
-        type: Schema.Types.ObjectId,
-        ref : 'Post'   
-    }]
+    }
     
 })
 

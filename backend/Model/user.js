@@ -11,13 +11,30 @@ const userSchema = new mongoose.Schema(
             type: String,
             require: true
         },
-        profileImage: {
-            type: String
+        realname:{
+            firstname:{
+                type: String,
+                require: true
+            },
+            lastname:{
+                type: String,
+                require: true
+            }
+        },
+        email:{
+            type:String,
+            require: true
         },
         comments:[{
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Comments'
-        }]
+        }],
+        inquiries: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: 'Inquiry',
+            },
+        ]
         
     },{timestamps: true}
 )

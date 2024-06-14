@@ -6,14 +6,16 @@ const app = express()
 const HomeRoute = require('./Routers/HomeRoute.js')
 const ProductRoute = require('./Routers/ProductRoute.js')
 const AdminRoute = require('./Routers/AdminRoute.js')
+const cors = require('cors');
 //Middlewares
 app.use((req, res, next)=>{
     console.log(req.path, req.method)
     next()
 })
-// app.use(fileUpload())
-app.use(express.urlencoded({extends: true}))
+
+app.use(cors());
 app.use(express.json())
+app.use(express.urlencoded({extends: true}))
 
 //Routes
 app.use('/home' ,HomeRoute)

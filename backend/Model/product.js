@@ -18,7 +18,7 @@ const productSchema = new mongoose.Schema({
     model:{
         classification:{
             type: String,
-            enum: ['Sendan', 'Hatchback', 'SUV', 'Crossover', 'Van',
+            enum: ['Sedan', 'Hatchback', 'SUV', 'Crossover', 'Van',
                    'Pickup', 'Sport', 'Coupe', 'Sport', 'Convertible'],
             require: true
         },
@@ -41,16 +41,17 @@ const productSchema = new mongoose.Schema({
             type: Number
         },
         fuelConsumption:{
-            type: Number
+            type: String //litter per 100km
         }
     },
     public:{
         type: Boolean,
         require: true
     },
-    comment:{
-        
-    }
+    comments: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Comment'
+    }]
 },{timeseries: true})
 
 module.exports = mongoose.model("Product", productSchema)

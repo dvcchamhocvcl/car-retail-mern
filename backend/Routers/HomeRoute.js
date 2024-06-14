@@ -1,14 +1,9 @@
 const express = require('express')
 const router = express.Router()
-const{
-    
-    loginHandler,
-    signupHandler,
-    inquiryFormHandler
-} = require('../Controllers/HomeController')
+const{login,signup,inquiryFormHandler} = require('../Controllers/HomeController')
+const {authenticateJWT} = require('../Middlewares/jwtUser')
 
-
-router.post('/signup', signupHandler)
-router.post('/login', loginHandler)
-router.post('/about', inquiryFormHandler)
+router.post('/signup', signup)
+router.post('/login', login)
+router.post('/about',authenticateJWT, inquiryFormHandler)
 module.exports = router

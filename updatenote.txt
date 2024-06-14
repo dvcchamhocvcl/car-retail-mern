@@ -1,0 +1,4 @@
+- Cloned the app front-end
+- The get product method is missing the image in the response
+- still need the view count path as well as the colection to manage it
+- implement the session and cookie
