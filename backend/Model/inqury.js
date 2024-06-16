@@ -2,12 +2,19 @@ const mongoose = require('mongoose');
 
 const inquirySchema = new mongoose.Schema(
     {
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
+        fullname: {
+            type: String,
             required: true,
         },
-        content: {
+        phoneNumber:{
+            type: Number,
+            require: true
+        },
+        email:{
+            type: String,
+            require: true
+        },
+        message: {
             type: String,
             required: true,
         },

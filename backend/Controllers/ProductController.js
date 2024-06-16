@@ -11,11 +11,11 @@ const Comment = require('../Model/comment');
 //Controllers
 async function updateProduct(req, res) {
     const id = req.params.id;
-
+    console.log(req.body)
     try {
-        const { name, price, brand, classification, color, engine, driveSystem, horsePowrer, fuelConsumption, public } = req.body;
+        const {  price, brand, classification, color, engine, driveSystem, horsePowrer, fuelConsumption, public } = req.body;
         const updatedFields = {
-            name, 
+             
             price,
             brand,
             model: {
@@ -30,14 +30,10 @@ async function updateProduct(req, res) {
             },
             public,
         };
-        const product = await Product.findById(id)
-        if (req.files) {
-            const oldProductImagePath = path.join(__dirname, '../Media/product_img/', product.name);
-            console.log(oldProductImagePath)
-            fs.rmSync(oldProductImagePath, { recursive: true });
-        }
+        
+
         try {
-            const updatedProduct = await Product.findByIdAndUpdate(id, updatedFields, { new: true });
+            const updatedProduct = await Product.findByIdAndUpdate(id, updatedFields, { new: false });
             console.log('product updated')
             res.status(200).json({ product: updatedProduct });
         } catch (error) {
@@ -77,6 +73,7 @@ function getMimeType(filePath) {
 }                  
 async function getProduct(req,res){
     const id = req.params.id
+    console.log(id)
     try {
         const product = await Product.findById(id)
             if (product && product.public) {
@@ -206,11 +203,13 @@ async function postComment(req, res) {
 
             if (!mongoose.Types.ObjectId.isValid(id)) {
                 res.status(400).json({ message: 'Invalid product ID' });
+                console.log('Invalid product ID')
             }
 
             const product = await Product.findById(id);
             if (!product) {
                 res.status(404).json({ message: 'Product not found' });
+                console.log('Product not found')
             }
 
             const comment = new Comment({

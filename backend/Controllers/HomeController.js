@@ -2,6 +2,7 @@ const express = require('express')
 
 //Load Models
 const User = require('../Model/user'); 
+const Inquiry = require('../Model/inqury')
 //Use Middlewares
 const bcrypt = require('bcrypt');
 
@@ -20,7 +21,7 @@ const signup = async (req, res) => {
         }
         const saltRounds = 10;
         const salt = bcrypt.genSaltSync(saltRounds);
-        const passwordHash = await bcrypt.hashSync(password, salt);
+        const passwordHash = bcrypt.hashSync(password, salt);
 
         const user = new User({
             username:username,
@@ -44,7 +45,7 @@ const login = async (req, res) => {
     try {
         const username = req.body.username
         const password = req.body.password
-        console.log('Request Body:', req.body);
+        console.log(`Request Body: ${req.body}`);
         const user = await User.findOne({ username:username });
         if (!user) {
             return res.status(400).json({ message: 'No User' });
@@ -58,7 +59,7 @@ const login = async (req, res) => {
                 id: user._id
             }
             console.log(`user logged in as ${req.session.user}`)
-            res.status(201).json({ user: { id: user._id, username: user.username } });
+            res.status(201).json({ user: { id: user._id, username: user.username }, message:'logged in' });
         }
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
@@ -75,27 +76,19 @@ const logout = async (req, res) =>{
 }
 const inquiryFormHandler = async (req, res) => {
     try {
-        const { userId, content } = req.body;
-
-        if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json({ message: 'Invalid user ID' });
-        }
-
-        const user = await User.findById(userId);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+        const fullname = req.body.fullname
+        const phoneNumber = req.body.phoneNumber
+        const email = req.body.email
+        const message = req.body.message
 
         const inquiry = new Inquiry({
-            user: userId,
-            content,
+            fullname:fullname ,
+            phoneNumber:phoneNumber ,
+            email:email ,
+            message:message ,
         });
 
         await inquiry.save();
-
-        user.inquiries.push(inquiry._id);
-        await user.save();
-
         res.status(201).json({ message: 'Inquiry submitted successfully' });
     } catch (error) {
         console.error(error);

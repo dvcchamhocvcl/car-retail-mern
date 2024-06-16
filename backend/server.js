@@ -21,22 +21,33 @@ app.use(session({
         maxAge: 1000 * 60 * 60 * 24,
         secure: false, 
         httpOnly: true,
-    
     }
 }))
+// const corsOptions = {
+//     origin: 'http://localhost:3000',
+//     credentials: true,
+// };
+// app.use(cors(corsOptions));
+// app.use(cookieParser());
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:8081'];
 const corsOptions = {
-    origin: 'http://localhost:3000', // Update with your frontend domain
-    credentials: true, // Allow credentials (cookies, authorization headers, etc.)
+    origin: (origin, callback) => {
+        if (allowedOrigins.includes(origin) || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
 };
-app.use(cookieParser());
+
 app.use(cors(corsOptions));
 app.use(express.json())
 app.use(express.urlencoded({extends: true}))
 app.use((req, res, next)=>{
     console.log(req.path, req.method)
-    console.log(req.session.user)
     if(req.session.user){
-        console.log(req.session.user)
+        console.log(`user: ${req.session.user}`)
     }else{
         console.log('no user')
     }

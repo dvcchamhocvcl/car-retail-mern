@@ -29,12 +29,6 @@ const userSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             ref: 'Comments'
         }],
-        inquiries: [
-            {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'Inquiry',
-            },
-        ]
         
     },{timestamps: true}
 )

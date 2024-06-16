@@ -52,16 +52,27 @@ const adminLogin = async (req, res) => {
     }
 };
 
-async function getallComments(req,res) {
-    if(req.session.user.isAdmin){
-
+async function getallComments(req, res) {
+    try {
+        const comments = await Comment.find({})
+        
+        res.status(200).json(comments); // Send the comments as JSON response
+    } catch (err) {
+        console.error("Error fetching comments:", err);
+        res.status(500).json({ error: 'Server error' }); // Handle server error
     }
-    const comments = await Comment.find({})
-    
 }
-async function deleteUserComments(req,res){
-
+async function deleteComment(req,res){
+    try {
+        const { commentId } = req.params;
+        console.log(commentId)
+        await Comment.findByIdAndDelete(commentId);
+        res.status(204).end(); 
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
 }
 module.exports = {  
-  deleteUserComments,adminLogin,adminSignup, getallComments
+    deleteComment,adminLogin,adminSignup, getallComments
 };
