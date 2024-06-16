@@ -4,23 +4,23 @@ const express = require('express')
 const User = require('../Model/user'); 
 //Use Middlewares
 const bcrypt = require('bcrypt');
-const { generateToken } = require('../Middlewares/jwtUser');
 
 const signup = async (req, res) => {
     try {
+        console.log(req.body)
         const username = req.body.username
         const password =  req.body.password
         const firstname = req.body.firstname
         const lastname = req.body.lastname
         const email = req.body.email
-        console.log(req.body)
         console.log(username, password)
-        const existingUser = await User.findOne({ username });
+        const existingUser = await User.findOne({ username:username });
         if (existingUser) {
             return res.status(400).json({ message: 'Username already taken' });
         }
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(password, salt);
+        const saltRounds = 10;
+        const salt = bcrypt.genSaltSync(saltRounds);
+        const passwordHash = await bcrypt.hashSync(password, salt);
 
         const user = new User({
             username:username,
@@ -44,23 +44,35 @@ const login = async (req, res) => {
     try {
         const username = req.body.username
         const password = req.body.password
-        const user = await User.findOne({ username });
+        console.log('Request Body:', req.body);
+        const user = await User.findOne({ username:username });
         if (!user) {
-            return res.status(400).json({ message: 'Invalid credentials' });
+            return res.status(400).json({ message: 'No User' });
         }
-        const isMatch = await bcrypt.compare(password, user.passwordHash);
-        
-        if (!isMatch) {
+        if (!bcrypt.compareSync(password, user.passwordHash)) {
             return res.status(400).json({ message: 'Bad credentials' });
+        }else{
+            req.session.authenticated = true
+            req.session.user = {
+                username:username,
+                id: user._id
+            }
+            console.log(`user logged in as ${req.session.user}`)
+            res.status(201).json({ user: { id: user._id, username: user.username } });
         }
-        const token = generateToken(user);
-
-        res.status(201).json({ token, user: { id: user._id, username: user.username } });
     } catch (error) {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
-
+const logout = async (req, res) =>{
+    try {
+        req.session.destroy()
+        res.status(200).json({message:'logged out'})
+    } catch (error) {
+        res.status(500).json({message: 'Internal Server Error'})
+    }
+    
+}
 const inquiryFormHandler = async (req, res) => {
     try {
         const { userId, content } = req.body;
@@ -90,4 +102,4 @@ const inquiryFormHandler = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
-module.exports = { signup, login, inquiryFormHandler };
+module.exports = { signup, login,logout, inquiryFormHandler };

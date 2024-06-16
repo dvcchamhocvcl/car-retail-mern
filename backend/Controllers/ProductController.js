@@ -49,54 +49,20 @@ async function updateProduct(req, res) {
     }
 }
 async function deleteProduct(req,res){
-        try {
-            const document = productModel.findById(req.body.id)
-            if(document){
-                await productModel.deleteOne({_id: req.body.id})
-            }else{
-                res.status(404).json({error: "The product might not exist"})
-            }
-            } catch (error) {
-                res.status(500).json({error:"Internal Sever Error"})
-                }
-}
-                        
-async function getProduct(req,res){
-    const id = req.params.id
+    console.log('hello')
     try {
-        const product = await productModel.findById(id)
-        if (product) {
-            const productFolder = path.join(__dirname, '../Media/product_img', product.name);
-            let imagesBase64 = [];
-
-            if (fs.existsSync(productFolder)) {
-                const files = fs.readdirSync(productFolder);
-                imagesBase64 = files.map(file => {
-                    const imagePath = path.join(productFolder, file);
-                    const imageBuffer = fs.readFileSync(imagePath);
-                    return imageBuffer.toString('base64');
-                });
-            return {
-                _id: product._id,
-                name: product.name,
-                price: product.price,
-                brand: product.brand,
-                model: product.model,
-                techSpec: product.techSpec,
-                public: product.public,
-                comments: product.comments,
-                image: imagesBase64
-            };
-            };
-
-            res.status(200).json(productWithImages);
-        } else {
-            res.status(404).json({ message: "There's no product to be displayed" });
+        const id = req.params.id
+        const product = await Product.findById(id)
+        if(product){
+            await Product.findByIdAndDelete(id)
+            res.json({msg:'alo'})
+        }else{
+            res.status(404).json({error: "The product might not exist"})
         }
     } catch (error) {
-        res.status(500).json({error: "Internal sever error"})
+        res.status(500).json({error:"Internal Sever Error"})
     }
-}
+}    
 function getMimeType(filePath) {
     const ext = path.extname(filePath).toLowerCase();
     switch (ext) {
@@ -108,12 +74,58 @@ function getMimeType(filePath) {
         default:
             return 'application/octet-stream'; // Default MIME type if unknown
     }
+}                  
+async function getProduct(req,res){
+    const id = req.params.id
+    try {
+        const product = await Product.findById(id)
+            if (product && product.public) {
+            var productWithImages
+                const productFolder = path.join(__dirname, '../Media/product_img', product.name);
+                let imagesBase64 = [];
+
+                if (fs.existsSync(productFolder)) {
+                    const files = fs.readdirSync(productFolder);
+                    imagesBase64 = files.map(file => {
+                        const imagePath = path.join(productFolder, file);
+                        const imageBuffer = fs.readFileSync(imagePath);
+                        return {data:imageBuffer.toString('base64'),
+                                mime:getMimeType(imagePath)
+                        };
+                    });
+                productWithImages = {
+                    _id: product._id,
+                    name: product.name,
+                    price: product.price,
+                    brand: product.brand,
+                    color: product.model.color,
+                    engine: product.techSpec.engine,
+                    driveSystem: product.techSpec.driveSystem,
+                    horsePowrer: product.techSpec.horsePowrer,
+                    fuelConsumption: product.techSpec.fuelConsumption,
+                    comments: product.comments,
+                    image: imagesBase64
+                };
+            };
+
+            res.status(200).json(productWithImages);
+
+        } else {
+            res.status(404).json({ message: "There's no product to be displayed" });
+        }
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({error: "Internal sever error"})
+    }
 }
 async function getProducts(req, res) {
     try {
         const products = await Product.find({});
         if (products) {
-            const productsWithImage = await Promise.all(products.map(async (product) => {
+            const productsWithImage = await Promise.all(
+                products
+                .filter(product => product.public)
+                .map(async (product) => {
                 const productFolder = path.join(__dirname, '../Media/product_img', product.name);
                 let imgdata 
                 let imgmime
@@ -186,44 +198,46 @@ async function createProduct (req, res) {
 }
 //Comments
 async function postComment(req, res) {
-    try {
-        const { id } = req.params; 
-        const { content, rating } = req.body;
-        const userId = req.user.id; 
+    if(req.session.user){
+        try {
+            const { id } = req.params; 
+            const { content, rating } = req.body;
+            const userId = req.session.user.id; 
 
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'Invalid product ID' });
+            if (!mongoose.Types.ObjectId.isValid(id)) {
+                res.status(400).json({ message: 'Invalid product ID' });
+            }
+
+            const product = await Product.findById(id);
+            if (!product) {
+                res.status(404).json({ message: 'Product not found' });
+            }
+
+            const comment = new Comment({
+                user: userId,
+                product: id,
+                content,
+                rating,
+            });
+
+            await comment.save();
+
+            product.comments.push(comment._id);
+            await product.save();
+
+            res.status(201).json({ message: 'Comment added successfully', comment });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: 'Internal server error' });
         }
-
-        const product = await Product.findById(id);
-        if (!product) {
-            return res.status(404).json({ message: 'Product not found' });
-        }
-
-        const comment = new Comment({
-            user: userId,
-            product: id,
-            content,
-            rating,
-        });
-
-        await comment.save();
-
-        product.comments.push(comment._id);
-        await product.save();
-
-        res.status(201).json({ message: 'Comment added successfully', comment });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Internal server error' });
+    }else{
+        res.status(401).json({message:'You need to login first'})
+        console.log('user has not logged in')
     }
 }
 async function getComments(req, res) {
     try {
-        const { id } = req.params;
-        if (!mongoose.Types.ObjectId.isValid(id)) {
-            return res.status(400).json({ message: 'Invalid product ID' });
-        }
+        const id  = req.params.id;
 
         const product = await Product.findById(id).populate({
             path: 'comments',
@@ -232,12 +246,13 @@ async function getComments(req, res) {
                 select: 'username',
             },
         });
-
         if (!product) {
             return res.status(404).json({ message: 'Product not found' });
         }
 
         res.status(200).send(product.comments);
+        console.log(product.comments)
+        console.log('Comment sent successfully')
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
